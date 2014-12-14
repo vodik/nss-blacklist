@@ -5,7 +5,7 @@ CFLAGS := -std=c99 \
 	${CFLAGS}
 
 all: search
-search: search.o boyermoore.o
+search: search.o memory.o boyermoore.o
 
 clean:
 	${RM} search *.o

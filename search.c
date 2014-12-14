@@ -10,53 +10,7 @@
 #include <sys/stat.h>
 
 #include "boyermoore.h"
-
-#define _unused_ __attribute__((unused))
-
-typedef struct memblock {
-    char *mem;
-    size_t len;
-} memblock_t;
-
-/* {{{ MMAP HELPER */
-static int memblock_open_fd(memblock_t *memblock, int fd)
-{
-    struct stat st;
-    fstat(fd, &st);
-    memblock->len = st.st_size;
-    memblock->mem = mmap(NULL, memblock->len, PROT_READ, MAP_SHARED | MAP_POPULATE, fd, 0);
-
-    return memblock->mem == MAP_FAILED ? -errno : 0;
-}
-
-static int memblock_open_file(memblock_t *memblock, const char *filename)
-{
-    int ret = 0, fd = open(filename, O_RDONLY);
-    if (fd < 0)
-        return -errno;
-
-    ret = memblock_open_fd(memblock, fd);
-    close(fd);
-    return ret;
-}
-
-static int memblock_close(memblock_t *memblock)
-{
-    if (memblock->mem != MAP_FAILED)
-        return munmap(memblock->mem, memblock->len);
-    return 0;
-}
-/* }}} */
-
-static void print_line(const char *line)
-{
-    char copy[BUFSIZ];
-    size_t len = strcspn(line, "\n");
-    strncpy(copy, line, len);
-
-    copy[len] = 0;
-    printf("FOUND: %s\n", copy);
-}
+#include "memory.h"
 
 int main(int argc, char *argv[])
 {
