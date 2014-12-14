@@ -50,30 +50,45 @@ static void make_delta2(int *delta, const char *pat, size_t patlen)
     }
 }
 
-int boyer_moore_compile(boyer_moore_t *bm, const char *pat, size_t patlen)
+int boyer_moore_init(boyer_moore_t *bm, const char *haystack, size_t len, const char *pattern)
 {
-    bm->delta2 = malloc(sizeof(int) * patlen);
-    bm->pattern = strndup(pat, patlen);
-    bm->length = patlen;
+    size_t pattern_len = strlen(pattern);
+    int *delta2 = malloc(sizeof(int) * pattern_len);
 
-    make_delta1(bm->delta1, pat, patlen);
-    make_delta2(bm->delta2, pat, patlen);
+    if (!delta2)
+        return -1;
 
+    *bm = (boyer_moore_t) {
+        .pattern_len = pattern_len,
+        .pattern = pattern,
+        .block = haystack,
+        .block_len = len,
+        .delta2 = delta2
+    };
+
+    make_delta1(bm->delta1, bm->pattern, pattern_len);
+    make_delta2(bm->delta2, bm->pattern, pattern_len);
     return 0;
 }
 
-const char *boyer_moore_search(const char *haystack, size_t len, boyer_moore_t *bm)
+const char *boyer_moore_next(boyer_moore_t *bm)
 {
-    size_t i = bm->length, j;
+    size_t i = bm->pattern_len;
 
-    while (i < len) {
-        j = bm->length;
+    while (i <= bm->block_len) {
+        size_t j = bm->pattern_len;
 
-        for (; j > 0 && haystack[i - 1] == bm->pattern[j - 1]; --i, --j);
+        for (; j > 0 && bm->block[i - 1] == bm->pattern[j - 1]; --i, --j);
 
-        if (j == 0)
-            return &haystack[i];
-        i += max(bm->delta1[(int)haystack[i - 1]], bm->delta2[j - 1]);
+        if (j == 0) {
+            const char *tmp = &bm->block[i];
+
+            bm->block += i + bm->pattern_len;
+            bm->block_len -= i + bm->pattern_len;
+
+            return tmp;
+        }
+        i += max(bm->delta1[(int)bm->block[i - 1]], bm->delta2[j - 1]);
     }
 
     return NULL;

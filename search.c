@@ -13,10 +13,6 @@
 
 #define _unused_ __attribute__((unused))
 
-char *pattern;
-size_t patlen;
-boyer_moore_t bm;
-
 typedef struct memblock {
     char *mem;
     size_t len;
@@ -65,30 +61,27 @@ static void print_line(const char *line)
 int main(int argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i) {
-        pattern = argv[i];
-        patlen = strlen(pattern);
-
+        const char *pattern = argv[i];
         size_t patlen = strlen(pattern);
 
         memblock_t mem;
-
-        boyer_moore_compile(&bm, pattern, patlen);
         memblock_open_file(&mem, "someonewhocares.org");
 
-        const char *p = mem.mem;
-        size_t nbytes = mem.len;
+        boyer_moore_t bm;
+        boyer_moore_init(&bm, mem.mem, mem.len, pattern);
 
-        { // CRAP CODE
-            const char *ret = boyer_moore_search(p, nbytes, &bm);
-            /* printf("GOT: %c%c%c%c%c\n", ret[0], ret[1], ret[2], ret[3], ret[4]); */
+        while (1) {
+            const char *ret = boyer_moore_next(&bm);
             if (!ret)
                 break;
 
-            if (ret != mem.mem && ret[-1] != '\n') {
-                break;
-            }
+            if (ret == mem.mem || ret[-1] == '\n') {
+                if (ret[patlen] != '\n' && ret[patlen] != '\0')
+                    continue;
 
-            printf("RET: %.*s\n", patlen, ret);
+                printf("RET: %.*s\n", (int)patlen, ret);
+                return 0;
+            }
         }
     }
 }
