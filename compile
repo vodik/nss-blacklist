@@ -5,19 +5,24 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def process(data):
-    for line in data.splitlines():
-        if line == '':
-            continue
+def someonewhocares():
+    def process(data):
+        for line in data.splitlines():
+            if line == '':
+                continue
 
-        match = re.search('^0\.0\.0\.0 (.+)', line)
-        if match:
-            yield match.group(1)
+            match = re.search('^0\.0\.0\.0 (.+)', line)
+            if match:
+                yield match.group(1)
 
 
-r = requests.get('http://someonewhocares.org/hosts/zero/')
-soup = BeautifulSoup(r.text)
+    r = requests.get('http://someonewhocares.org/hosts/zero/')
+    soup = BeautifulSoup(r.text)
 
-for body in soup.find_all(attrs={'class': 'BODY'}):
-    for host in sorted(set(process(body.pre.decode_contents()))):
+    for body in soup.find_all(attrs={'class': 'BODY'}):
+        yield from sorted(set(process(body.pre.decode_contents())))
+
+
+if __name__ == '__main__':
+    for host in someonewhocares():
         print(host)
