@@ -68,10 +68,7 @@ int main(int argc, char *argv[])
         pattern = argv[i];
         patlen = strlen(pattern);
 
-        if (pattern[0] == '/') {
-            ++pattern;
-            --patlen;
-        }
+        size_t patlen = strlen(pattern);
 
         memblock_t mem;
 
@@ -81,10 +78,17 @@ int main(int argc, char *argv[])
         const char *p = mem.mem;
         size_t nbytes = mem.len;
 
-        const char *ret = boyer_moore_search(p, nbytes, &bm);
-        if (!ret)
-            break;
+        { // CRAP CODE
+            const char *ret = boyer_moore_search(p, nbytes, &bm);
+            /* printf("GOT: %c%c%c%c%c\n", ret[0], ret[1], ret[2], ret[3], ret[4]); */
+            if (!ret)
+                break;
 
-        printf("RET: %s\n", ret);
+            if (ret != mem.mem && ret[-1] != '\n') {
+                break;
+            }
+
+            printf("RET: %.*s\n", patlen, ret);
+        }
     }
 }
