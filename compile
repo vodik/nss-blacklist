@@ -10,15 +10,14 @@ def process(data):
         if line == '':
             continue
 
-        m = re.search('^0\.0\.0\.0 (.+)', line)
-        if m:
-            print(m.group(1))
+        match = re.search('^0\.0\.0\.0 (.+)', line)
+        if match:
+            yield match.group(1)
 
 
 r = requests.get('http://someonewhocares.org/hosts/zero/')
 soup = BeautifulSoup(r.text)
 
 for body in soup.find_all(attrs={'class': 'BODY'}):
-    # import IPython
-    # IPython.embed()
-    process(''.join(body.pre.decode_contents()))
+    for host in sorted(set(process(body.pre.decode_contents()))):
+        print(host)
