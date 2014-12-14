@@ -11,7 +11,7 @@ def someonewhocares():
             if line == '':
                 continue
 
-            match = re.search('^0\.0\.0\.0 (.+)', line)
+            match = re.search('^0\.0\.0\.0 ([^\s]+)', line)
             if match:
                 yield match.group(1)
 
