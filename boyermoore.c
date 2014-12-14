@@ -81,11 +81,12 @@ const char *boyer_moore_next(boyer_moore_t *bm)
         for (; j > 0 && bm->block[i - 1] == bm->pattern[j - 1]; --i, --j);
 
         if (j == 0) {
-            const char *tmp = &bm->block[i];
+            if (i + bm->pattern_len > bm->block_len)
+                return NULL;
 
+            const char *tmp = &bm->block[i];
             bm->block += i + bm->pattern_len;
             bm->block_len -= i + bm->pattern_len;
-
             return tmp;
         }
         i += max(bm->delta1[(int)bm->block[i - 1]], bm->delta2[j - 1]);
