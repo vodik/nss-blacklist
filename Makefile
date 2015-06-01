@@ -2,6 +2,7 @@ CFLAGS := -std=c99 -fPIC \
 	-Wall -Wextra -pedantic \
 	-Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes \
 	-D_GNU_SOURCE \
+	-ggdb3 -O0 \
 	${CFLAGS}
 
 MODULE = libnss_blacklist.so.2
