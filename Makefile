@@ -4,10 +4,12 @@ CFLAGS := -std=c99 -fPIC \
 	-D_GNU_SOURCE \
 	${CFLAGS}
 
-all: search libnss-blacklist.so.0
+MODULE = libnss_blacklist.so.2
+
+all: search $(MODULE)
 search: search.o memory.o boyermoore.o
-libnss_blacklist.so.0: nss.o search.o memory.o boyermoore.o
-	$(LINK.o) -shared $^ $(LOADLIBES) $(LDLIBS) -o $@
+$(MODULE): nss.o search.o memory.o boyermoore.o
+	${CC} -fPIC -Wall -shared -o $(MODULE) -Wl,-soname,$(MODULE) $^
 
 clean:
 	${RM} search *.o
